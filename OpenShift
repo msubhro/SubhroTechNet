@@ -1,0 +1,94 @@
+Step 1: Ensure you have an active Azure Subscription.
+
+Note: The OpenShift Container Platform cluster uses a number of Microsoft Azure components, and the default Azure subscription and service limits, quotas, and constraints affect your ability to install OpenShift Container Platform clusters.
+
+Visit below link for the services, limits and quota requirement.
+
+Ref: https://docs.openshift.com/container-platform/4.8/installing/installing_azure/installing-azure-account.html#installing-azure-account
+
+
+Step 2:  Create a Developre Account and subscription in RedHat portal.
+
+Step 3:  Register a public domain name. Create a new Azure DNS Zone and copy Azure DNS Name Server addresses. Paste Azure DNS Name Server in your domain registration console.
+ 
+    Note : To install OpenShift Container Platform, the Microsoft Azure account you use must have a dedicated public hosted DNS zone in your account. This zone must be authoritative for the domain. This service provides cluster DNS resolution and name lookup for external connections to the cluster.
+
+    Ref: https://docs.openshift.com/container-platform/4.8/installing/installing_azure/installing-azure-account.html#installing-azure-account
+
+Step 4: Create a X64 Azure ReadHat VM. This will be the master node. Use the option to generate Private Key.
+
+Step 5: Use PuTTyGen to convert this Linux PEM file to Windows PPK file, since our base laptop is Windows.
+
+Step 6: Login to the master node using username (default: azureuser) and the ppk file (Private Key file).
+
+Step 7: Install Azure CLI within the master node.
+
+        a) sudo dnf install -y https://packages.microsoft.com/config/rhel/8/packages-microsoft-prod.rpm
+        b) sudo dnf install azure-cli
+        c) Conform Azure CLI is installed : az --version
+
+Step 8: Create a Service Principle and Grant Access
+
+        a) Create a Service Principle in Azure AD and give contributer and User Access Admin access to the subscription. This Service Principle will be used by OpenSHift to create and manage required services in Azure.
+        
+        Note: If you limit the service principal scope of the OpenShift Container Platform installation program to an already existing Azure resource group, you must ensure all other resources used by the installation program in your environment have the necessary permissions, such as the public DNS zone and virtual network. Destroying a cluster using the installation program deletes this resource group.
+
+        b) To operate the Cloud Credential Operator (CCO) in mint mode, the app registration service principal also requires the Azure Active Directory Graph/Application.ReadWrite.OwnedBy API permission.
+
+       Follow this link to add the permission: https://learn.microsoft.com/en-us/graph/migrate-azure-ad-graph-configure-permissions?tabs=http%2Cupdatepermissions-azureadgraph-powershell#option-1-use-the-azure-portal-to-find-the-apis-your-organization-uses
+
+
+  Step 9: Generate a key pair for cluster node SSH access
+
+        Refer: https://docs.openshift.com/container-platform/4.8/installing/installing_azure/installing-azure-default.html#ssh-agent-using_installing-azure-default
+
+        a) ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_ed25519
+
+        b) cat ~/.ssh/id_ed25519
+
+        If the ssh-agent process is not already running for your local user, start it as a background task
+
+        c) eval "$(ssh-agent -s)"
+
+        d) Add your SSH private key to the ssh-agent:
+
+            ssh add /home/azureuser/.ssh/id_ed25519
+
+   Step 10: Obtain the Installation Program
+
+       a) Visit this page: https://console.redhat.com/openshift/create/datacenter
+       b) Download appropriate file. 
+           command: wget <download link>
+       c) Extract the installation program : 
+           command: tar xvf openshift-install-linux.tar.gz
+         
+        Ref: https://docs.openshift.com/container-platform/4.8/installing/installing_azure/installing-azure-default.html#installation-obtaining-installer_installing-azure-default
+
+
+   Step 11: Deploy the Cluster
+
+       a) Change the directory to the location where installation files were extracted in the previous step.
+
+       b) Now run following comamnd to create the cluster :
+       
+          Command: ./openshift-install create cluster --dir <installation_directory> --log-level=info 
+
+          Note: For <installation_directory>, specify the directory name to store the files that the installation program creates.
+       
+       c) Follow the steps given in this document: 
+
+          https://docs.openshift.com/container-platform/4.8/installing/installing_azure/installing-azure-default.html#installation-launching-installer_installing-azure-default
+
+     
+    Step 12 : Install the OpenShift CLI
+
+      Follow below link to install OpenSHift CLI :
+
+          https://docs.openshift.com/container-platform/4.8/installing/installing_azure/installing-azure-default.html#cli-installing-cli_installing-azure-default
+
+
+    Step 14: Logon to the CLuster by using OpenShift CLI
+     
+        Follow below link to install OpenSHift CLI :
+
+        https://docs.openshift.com/container-platform/4.8/installing/installing_azure/installing-azure-default.html#cli-logging-in-kubeadmin_installing-azure-default
